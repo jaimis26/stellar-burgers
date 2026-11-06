@@ -1,21 +1,31 @@
+import { useSelector } from '@/services/store';
+import { getOrderByNumberApi } from '@/utils/burger-api';
 import { Preloader, OrderInfoUI } from '@ui';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-import type { TIngredient } from '@utils-types';
+import type { TIngredient, TOrder } from '@utils-types';
 
 export const OrderInfo = (): React.JSX.Element => {
+  const params = useParams();
+  const { number } = params;
   /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0,
-  };
+  const orderFromStore = useSelector((state) =>
+    state.feed.userOrders.find((item) => item.number === Number(number))
+  );
 
-  const ingredients: TIngredient[] = [];
+  const [fetchedOrder, setFetchedOrder] = useState<TOrder | null>(null);
+
+  useEffect(() => {
+    if (!orderFromStore && number) {
+      getOrderByNumberApi(Number(number))
+        .then((res) => setFetchedOrder(res.orders[0]))
+        .catch((err) => console.error(err));
+    }
+  }, [orderFromStore, number]);
+
+  const orderData = orderFromStore ?? fetchedOrder;
+  const ingredients = useSelector((state) => state.ingredients.ingredients);
 
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
