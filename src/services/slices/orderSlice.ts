@@ -1,4 +1,4 @@
-import { orderBurgerApi } from '@/utils/burger-api';
+import { getOrderByNumberApi, orderBurgerApi } from '@/utils/burger-api';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import type { TOrder } from '@/utils/types';
@@ -6,12 +6,16 @@ import type { TOrder } from '@/utils/types';
 type TOrderState = {
   orderRequest: boolean;
   orderModalData: TOrder | null;
+  orderByNumber: TOrder | null;
+  orderByNumberLoading: boolean;
   error: string | null;
 };
 
 const initialState: TOrderState = {
   orderRequest: false,
   orderModalData: null,
+  orderByNumber: null,
+  orderByNumberLoading: false,
   error: null,
 };
 
@@ -23,6 +27,14 @@ export const createOrderThunk = createAsyncThunk(
   }
 );
 
+export const fetchOrderByNumberThunk = createAsyncThunk(
+  'order/fetchOrderByNumber',
+  async (number: number) => {
+    const data = await getOrderByNumberApi(number);
+    return data.orders[0];
+  }
+);
+
 export const orderSlice = createSlice({
   name: 'order',
   initialState,
@@ -30,6 +42,9 @@ export const orderSlice = createSlice({
     clearOrder: (state) => {
       state.orderModalData = null;
       state.orderRequest = false;
+    },
+    clearOrderByNumber: (state) => {
+      state.orderByNumber = null;
     },
   },
   extraReducers: (builder) => {
@@ -45,9 +60,21 @@ export const orderSlice = createSlice({
       .addCase(createOrderThunk.rejected, (state, action) => {
         state.orderRequest = false;
         state.error = action.error.message ?? 'Не удалось получить заказ';
+      })
+      .addCase(fetchOrderByNumberThunk.pending, (state) => {
+        state.orderByNumberLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderByNumberThunk.fulfilled, (state, action) => {
+        state.orderByNumberLoading = false;
+        state.orderByNumber = action.payload;
+      })
+      .addCase(fetchOrderByNumberThunk.rejected, (state, action) => {
+        state.orderByNumberLoading = false;
+        state.error = action.error.message ?? 'Не удалось получить заказ';
       });
   },
 });
 
-export const { clearOrder } = orderSlice.actions;
+export const { clearOrder, clearOrderByNumber } = orderSlice.actions;
 export default orderSlice.reducer;

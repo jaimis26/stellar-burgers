@@ -1,5 +1,5 @@
 import { useSelector } from '@/services/store';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
 import { Preloader } from '../ui';
 
@@ -17,6 +17,8 @@ export const ProtectedRoute = ({
   mode = 'private',
 }: ProtectedRouteProps): React.JSX.Element => {
   const { user, isAuthChecked } = useSelector((state) => state.user);
+  const location = useLocation();
+
   if (!isAuthChecked) {
     return <Preloader />;
   }
@@ -24,13 +26,14 @@ export const ProtectedRoute = ({
 
   if (mode === 'private') {
     if (!isLoggedIn) {
-      return <Navigate to="/login" replace />;
+      return <Navigate to="/login" state={{ from: location }} replace />;
     }
     return <>{children}</>;
   }
   if (mode === 'public') {
     if (isLoggedIn) {
-      return <Navigate to="/profile" replace />;
+      const from = (location.state as { from?: Location })?.from ?? '/';
+      return <Navigate to={from} replace />;
     }
     return <>{children}</>;
   }

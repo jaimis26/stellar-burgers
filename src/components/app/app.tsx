@@ -49,8 +49,6 @@ const App = (): React.JSX.Element => {
 
 export default App;
 
-/* Маршруты показываются только когда ингредиенты загружены: без них не
-   отрисовать ни конструктор, ни состав заказа. */
 const AppContent = ({
   ingredients,
   isLoading,
@@ -83,6 +81,7 @@ const RouteComponent = (): React.JSX.Element => {
   const location = useLocation();
   const backgroundLocation = (location.state as { background?: Location } | null)
     ?.background;
+
   return (
     <>
       <Routes location={backgroundLocation ?? location}>
@@ -159,16 +158,9 @@ const RouteComponent = (): React.JSX.Element => {
         />
         <Route path="*" element={<NotFound404 />} />
       </Routes>
+
       {backgroundLocation && (
         <Routes>
-          <Route
-            path="/feed/:number"
-            element={
-              <Modal title="Информация о заказе" onClose={() => void navigate(-1)}>
-                <OrderInfo />
-              </Modal>
-            }
-          />
           <Route
             path="/ingredients/:id"
             element={
@@ -178,10 +170,18 @@ const RouteComponent = (): React.JSX.Element => {
             }
           />
           <Route
+            path="/feed/:number"
+            element={
+              <Modal title="" onClose={() => void navigate(-1)}>
+                <OrderInfo />
+              </Modal>
+            }
+          />
+          <Route
             path="/profile/orders/:number"
             element={
               <ProtectedRoute mode="private">
-                <Modal title="Информация о заказе" onClose={() => void navigate(-1)}>
+                <Modal title="" onClose={() => void navigate(-1)}>
                   <OrderInfo />
                 </Modal>
               </ProtectedRoute>

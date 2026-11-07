@@ -1,33 +1,50 @@
-import { useSelector } from '@/services/store';
-import { getOrderByNumberApi } from '@/utils/burger-api';
+import {
+  clearOrderByNumber,
+  fetchOrderByNumberThunk,
+} from '@/services/slices/orderSlice';
+import { useDispatch, useSelector } from '@/services/store';
 import { Preloader, OrderInfoUI } from '@ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
+import type { RootState } from '@/services/store';
 import type { TIngredient, TOrder } from '@utils-types';
 
 export const OrderInfo = (): React.JSX.Element => {
   const params = useParams();
+  const dispatch = useDispatch();
   const { number } = params;
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderFromStore = useSelector((state) =>
-    state.feed.userOrders.find((item) => item.number === Number(number))
+  const orderNumber = Number(number);
+
+  const orderData = useSelector((state: RootState): TOrder | null | undefined => {
+    const feedOrder = state.feed.orders?.find((item) => item.number === orderNumber);
+    if (feedOrder) return feedOrder;
+
+    const userOrder = state.feed.userOrders?.find((item) => item.number === orderNumber);
+    if (userOrder) return userOrder;
+
+    return state.order.orderByNumber;
+  });
+
+  const ingredients = useSelector(
+    (state: RootState): TIngredient[] => state.ingredients.ingredients
   );
 
-  const [fetchedOrder, setFetchedOrder] = useState<TOrder | null>(null);
+  useEffect(() => {
+    if (!orderData && orderNumber) {
+      void dispatch(fetchOrderByNumberThunk(orderNumber));
+    }
+    return (): void => {
+      void dispatch(clearOrderByNumber());
+    };
+  }, [orderNumber, dispatch]);
 
   useEffect(() => {
-    if (!orderFromStore && number) {
-      getOrderByNumberApi(Number(number))
-        .then((res) => setFetchedOrder(res.orders[0]))
-        .catch((err) => console.error(err));
-    }
-  }, [orderFromStore, number]);
+    return (): void => {
+      void dispatch(clearOrderByNumber());
+    };
+  }, [dispatch]);
 
-  const orderData = orderFromStore ?? fetchedOrder;
-  const ingredients = useSelector((state) => state.ingredients.ingredients);
-
-  /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
