@@ -5,7 +5,7 @@ import {
 import { useDispatch, useSelector } from '@/services/store';
 import { Preloader, OrderInfoUI } from '@ui';
 import { useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 
 import type { RootState } from '@/services/store';
 import type { TIngredient, TOrder } from '@utils-types';
@@ -13,6 +13,7 @@ import type { TIngredient, TOrder } from '@utils-types';
 export const OrderInfo = (): React.JSX.Element => {
   const params = useParams();
   const dispatch = useDispatch();
+  const location = useLocation();
   const { number } = params;
   const orderNumber = Number(number);
 
@@ -88,5 +89,7 @@ export const OrderInfo = (): React.JSX.Element => {
     return <Preloader />;
   }
 
-  return <OrderInfoUI orderInfo={orderInfo} />;
+  const isModal = !!(location.state as { background?: Location } | null)?.background;
+
+  return <OrderInfoUI orderInfo={orderInfo} isModal={isModal} />;
 };

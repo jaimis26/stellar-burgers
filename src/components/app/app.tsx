@@ -87,7 +87,14 @@ const RouteComponent = (): React.JSX.Element => {
       <Routes location={backgroundLocation ?? location}>
         <Route path="/" element={<ConstructorPage />} />
         <Route path="/feed" element={<Feed />} />
-        <Route path="/feed/:number" element={<OrderInfo />} />
+        <Route
+          path="/feed/:number"
+          element={
+            <div className={styles.detailPageWrap}>
+              <OrderInfo />
+            </div>
+          }
+        />
         <Route
           path="/ingredients/:id"
           element={
@@ -152,7 +159,9 @@ const RouteComponent = (): React.JSX.Element => {
           path="/profile/orders/:number"
           element={
             <ProtectedRoute mode="private">
-              <OrderInfo />
+              <div className={styles.detailPageWrap}>
+                <OrderInfo />
+              </div>
             </ProtectedRoute>
           }
         />
