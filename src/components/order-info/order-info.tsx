@@ -1,23 +1,51 @@
+import {
+  clearOrderByNumber,
+  fetchOrderByNumberThunk,
+} from '@/services/slices/orderSlice';
+import { useDispatch, useSelector } from '@/services/store';
 import { Preloader, OrderInfoUI } from '@ui';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 
-import type { TIngredient } from '@utils-types';
+import type { RootState } from '@/services/store';
+import type { TIngredient, TOrder } from '@utils-types';
 
 export const OrderInfo = (): React.JSX.Element => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0,
-  };
+  const params = useParams();
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const { number } = params;
+  const orderNumber = Number(number);
 
-  const ingredients: TIngredient[] = [];
+  const orderData = useSelector((state: RootState): TOrder | null | undefined => {
+    const feedOrder = state.feed.orders?.find((item) => item.number === orderNumber);
+    if (feedOrder) return feedOrder;
 
-  /* Готовим данные для отображения */
+    const userOrder = state.feed.userOrders?.find((item) => item.number === orderNumber);
+    if (userOrder) return userOrder;
+
+    return state.order.orderByNumber;
+  });
+
+  const ingredients = useSelector(
+    (state: RootState): TIngredient[] => state.ingredients.ingredients
+  );
+
+  useEffect(() => {
+    if (!orderData && orderNumber) {
+      void dispatch(fetchOrderByNumberThunk(orderNumber));
+    }
+    return (): void => {
+      void dispatch(clearOrderByNumber());
+    };
+  }, [orderNumber, dispatch]);
+
+  useEffect(() => {
+    return (): void => {
+      void dispatch(clearOrderByNumber());
+    };
+  }, [dispatch]);
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -61,5 +89,7 @@ export const OrderInfo = (): React.JSX.Element => {
     return <Preloader />;
   }
 
-  return <OrderInfoUI orderInfo={orderInfo} />;
+  const isModal = !!(location.state as { background?: Location } | null)?.background;
+
+  return <OrderInfoUI orderInfo={orderInfo} isModal={isModal} />;
 };
