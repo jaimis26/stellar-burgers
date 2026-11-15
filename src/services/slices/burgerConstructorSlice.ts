@@ -9,7 +9,7 @@ import type {
 } from '@/utils/types';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-const initialState: TConstructorState = {
+export const initialState: TConstructorState = {
   bun: null,
   ingredients: [],
 };
