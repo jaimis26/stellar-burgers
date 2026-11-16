@@ -70,6 +70,8 @@ describe('Тесты редьюсера burgerConstructor', () => {
       expect(state.ingredients[0]).toMatchObject(mockIngredient1);
       expect(typeof state.ingredients[0]?.id).toBe('string');
     });
+  });
+  describe('Экшен removeIngredient', () => {
     test('должен удалить ингредиент по id при removeIngredient', () => {
       const startState = {
         bun: null,
@@ -80,6 +82,8 @@ describe('Тесты редьюсера burgerConstructor', () => {
       expect(newState.ingredients).toHaveLength(1);
       expect(newState.ingredients).toEqual([mockConstructorIngredient2]);
     });
+  });
+  describe('Экшен moveIngredient', () => {
     test('должен менять порядок ингредиентов при moveIngredient', () => {
       const startState = {
         bun: null,
@@ -92,6 +96,8 @@ describe('Тесты редьюсера burgerConstructor', () => {
         mockConstructorIngredient1,
       ]);
     });
+  });
+  describe('Очистка конструктора (clearConstructor и createOrderThunk.fulfilled)', () => {
     test('должен очищать конструктор при clearConstructor', () => {
       const newState = burgerConstructorReducer(filledState, clearConstructor());
       expect(newState).toEqual(initialState);
